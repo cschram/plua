@@ -1,0 +1,11 @@
+[package]
+name = "plua"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.96"
+clap = { version = "4.5.31", features = ["derive"] }
+mlua = { version = "0.10.3", features = ["lua54", "anyhow"] }
+pest = "2.7.15"
+pest_derive = "2.7.15"

@@ -1,0 +1,51 @@
+Program = _{ SOI ~ (Line ~ EOL)* ~ (Line ~ EOI) }
+
+Line = _{
+    MetaInclude
+  | MetaLine
+  | LuaLine
+}
+
+// Meta includes:
+// ```
+// ##!include "myinclude"
+// ```
+MetaInclude = { MetaIncludePrefix ~ DoubleQuote ~ Filename ~ DoubleQuote ~ Whitespace* }
+
+MetaIncludePrefix = _{ Whitespace* ~ "##!include" ~ Whitespace* }
+
+DoubleQuote = _{ "\"" }
+
+Filename = { (!DoubleQuote ~ Character)+ }
+
+// Single-line preprocessor line:
+// ```
+// ## local foo = "bar"
+// ```
+MetaLine = { MetaLinePrefix ~ MetaLineContent }
+
+MetaLinePrefix = _{ Whitespace* ~ "##" }
+
+MetaLineContent = { Character* }
+
+// Preprocessor value interpolation
+// ```
+// print(#[foo]#)
+// ```
+MetaInterpolate = { MetaInterpolatePrefix ~ Lua ~ MetaInterpolateSuffix }
+
+MetaInterpolatePrefix = _{ "#[" }
+
+MetaInterpolateSuffix = _{ "]#" }
+
+// Any lua code
+LuaLine = { (MetaInterpolate | Lua)* }
+
+Lua = { (!(MetaInterpolatePrefix | MetaInterpolateSuffix) ~ Character)+ }
+
+// Common rules
+EOL = _{ "\n" | "\r\n" }
+
+Whitespace = _{ " " | "\t" }
+
+Character = _{ !EOL ~ ANY }
