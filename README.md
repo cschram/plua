@@ -1,3 +1,15 @@
+# Plua
+
+A Lua preprocessor/metaprogramming language.
+
+## To Do
+
+- [ ] Meta includes
+- [ ] Environment globals
+
+## Example
+
+```lua
 -------------------------------------------------------------------------------
 -- Basic if/else structure
 -------------------------------------------------------------------------------
@@ -61,7 +73,7 @@ do
 end
 
 -------------------------------------------------------------------------------
--- TODO: Meta Program Includes
+-- Meta Program Includes
 -- Includes another plua file inline into the metaprogram, allowing metaprogram
 -- functions and variables to be used across files.
 -------------------------------------------------------------------------------
@@ -69,5 +81,5 @@ end
 -- Defines a local `foo` as `"bar"`.
 ##!include "include"
 
-## local foo = "bar"
 print("#[foo]#")
+```
