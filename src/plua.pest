@@ -32,16 +32,27 @@ MetaLineContent = { Character* }
 // ```
 // print(#[foo]#)
 // ```
-MetaInterpolate = { MetaInterpolatePrefix ~ Lua ~ MetaInterpolateSuffix }
+MetaValueInterpolate = { MetaValueInterpolatePrefix ~ Lua ~ MetaValueInterpolateSuffix }
 
-MetaInterpolatePrefix = _{ "#[" }
+MetaValueInterpolatePrefix = _{ "#[" }
 
-MetaInterpolateSuffix = _{ "]#" }
+MetaValueInterpolateSuffix = _{ "]#" }
+
+// Preprocessor code interpolation
+// ```
+// ## function increment(ident, inc)
+//   #{ident}# = #{ident}# + #[inc]#
+// ## end
+MetaCodeInterpolate = { MetaCodeInterpolatePrefix ~ Lua ~ MetaCodeInterpolateSuffix }
+
+MetaCodeInterpolatePrefix = _{ "#{" }
+
+MetaCodeInterpolateSuffix = _{ "}#" }
 
 // Any lua code
-LuaLine = { (MetaInterpolate | Lua)* }
+LuaLine = { (MetaValueInterpolate | MetaCodeInterpolate | Lua)* }
 
-Lua = { (!(MetaInterpolatePrefix | MetaInterpolateSuffix) ~ Character)+ }
+Lua = { (!(MetaValueInterpolatePrefix | MetaValueInterpolateSuffix | MetaCodeInterpolatePrefix | MetaCodeInterpolateSuffix) ~ Character)+ }
 
 // Common rules
 EOL = _{ "\n" | "\r\n" }

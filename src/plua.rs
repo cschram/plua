@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use mlua::Lua;
+use mlua::{IntoLua, Lua};
 use pest::Parser;
 use pest_derive::Parser;
 
@@ -10,24 +10,26 @@ const FOOTER_SRC: &str = include_str!("footer.lua");
 #[grammar = "src/plua.pest"]
 pub struct PluaParser;
 
+pub struct PluaProgram {
+    pub name: String,
+    pub metaprogram: String,
+}
+
 pub struct Plua {
-    name: String,
-    source: String,
-    metaprogram: String,
     lua: Lua,
 }
 
 impl Plua {
-    pub fn new(name: &str, source: &str) -> Result<Self> {
-        Ok(Self {
-            name: name.to_owned(),
-            source: source.to_owned(),
-            metaprogram: Self::parse(source)?,
-            lua: Lua::new(),
-        })
+    pub fn new() -> Result<Self> {
+        Ok(Self { lua: Lua::new() })
     }
 
-    fn parse(source: &str) -> Result<String> {
+    pub fn set_global(&mut self, name: &str, value: impl IntoLua) -> Result<()> {
+        self.lua.globals().set(name, value)?;
+        Ok(())
+    }
+
+    pub fn parse(name: &str, source: &str) -> Result<PluaProgram> {
         let mut metaprogram = vec![HEADER_SRC.to_owned()];
         let pairs = PluaParser::parse(Rule::Program, source)?;
         for pair in pairs {
@@ -39,7 +41,12 @@ impl Plua {
                             Rule::Lua => {
                                 line.push(format!("\"{}\"", Self::escape(inner_pair.as_str())));
                             }
-                            Rule::MetaInterpolate => {
+                            Rule::MetaValueInterpolate => {
+                                let inner_lua =
+                                    inner_pair.into_inner().next().expect("Expected Lua");
+                                line.push(format!("__format_value({})", inner_lua.as_str()));
+                            }
+                            Rule::MetaCodeInterpolate => {
                                 let inner_lua =
                                     inner_pair.into_inner().next().expect("Expected Lua");
                                 line.push(format!("({})", inner_lua.as_str()));
@@ -60,29 +67,28 @@ impl Plua {
                     metaprogram.push(metaline_content.as_str().to_string());
                 }
                 Rule::MetaInclude => {
-                    let filename = pair.into_inner().next().expect("Expected Filename");
+                    let _filename = pair.into_inner().next().expect("Expected Filename");
                     // TODO: Inline included plua
                 }
                 _ => {}
             }
         }
         metaprogram.push(FOOTER_SRC.to_owned());
-        Ok(metaprogram.join("\n"))
+        Ok(PluaProgram {
+            name: name.to_string(),
+            metaprogram: metaprogram.join("\n"),
+        })
     }
 
     fn escape(s: &str) -> String {
         s.replace("\"", "\\\"").to_string()
     }
 
-    pub fn metaprogram(&self) -> String {
-        self.metaprogram.clone()
-    }
-
-    pub fn exec(&self) -> Result<String> {
+    pub fn exec(&self, program: &PluaProgram) -> Result<String> {
         let output: String = self
             .lua
-            .load(&self.metaprogram)
-            .set_name(&self.name)
+            .load(&program.metaprogram)
+            .set_name(&program.name)
             .eval()?;
         Ok(output)
     }

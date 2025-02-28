@@ -1,12 +1,47 @@
 # Plua
 
-A WIP Lua preprocessor/metaprogramming language, inspired by the preprocessor of [Nelua](https://nelua.io/overview/#preprocessor).
+A WIP Lua preprocessor, inspired by the preprocessor of [Nelua](https://nelua.io/overview/#preprocessor).
 
-## To Do
+## Features
 
-- [ ] Meta includes
-- [ ] CLI 
-- [ ] Environment globals
+- [x] Metaprogramming
+    - [x] Compile time Lua
+    - [x] Interpolation
+- [x] CLI 
+- [x] Environment globals
+- [ ] Metacode includes
+- [ ] Multiline metacode
+- [ ] Error and warning API
+- [ ] [Lua LS plugin](https://luals.github.io/wiki/plugins/)
+- [ ] Editor syntax highlighting
+    - [ ] Vim/Neovim
+    - [ ] VS Code
+- [ ] TOML config
+
+### Possible Features
+
+- [ ] Utilities/common library for metaprograms
+- [ ] AST API for code generation in metaprograms
+
+## Usage
+
+```
+$ plua --help
+Lua preprocessor/metaprogramming language.
+
+Usage: plua [OPTIONS] <INPUT> <OUTPUT>
+
+Arguments:
+  <INPUT>   Input plua file
+  <OUTPUT>  Output lua file
+
+Options:
+  -f, --format     Format the lua output
+  -m, --meta       Output the metaprogram as a .meta.lua file alongside the output
+  -e, --env <ENV>  Pass an environment global in the format name=value
+  -h, --help       Print help
+  -V, --version    Print version
+```
 
 ## Example
 
@@ -17,7 +52,7 @@ Plua code:
 ##-- Basic if/else structure
 ##-------------------------------------------------------------------------------
 
-##-- This should evaluate to the following resulting code:
+##-- This should evaluate to the following lua code:
 ##-- ```
 ##-- function isTest()
 ##--   return true
@@ -41,7 +76,7 @@ assert(isTest())
 ##   return n ^ e
 ## end
 
-##-- This should evaluate to the following metaprogram code:
+##-- This should evaluate to the following lua code:
 ##-- ```
 ##-- __emit("assert(" .. (pow(2, 3) .. " == 8)")
 ##-- ```
@@ -58,7 +93,7 @@ assert(#[pow(2, 3)]# == 8)
 ##-- end
 ##-- ```
 ## function increment(identifier, amount)
-  #[identifier]# = #[identifier]# + #[amount]#
+  #{identifier}# = #{identifier}# + #[amount]#
 ## end
 
 ##-- This should evaluate to the following resulting code:
@@ -76,7 +111,7 @@ do
 end
 
 ##-------------------------------------------------------------------------------
-##-- Meta Program Includes
+##-- TODO: Meta Program Includes
 ##-- Includes another plua file inline into the metaprogram, allowing metaprogram
 ##-- functions and variables to be used across files.
 ##-------------------------------------------------------------------------------
@@ -84,22 +119,43 @@ end
 ##-- Defines a local `foo` as `"bar"`.
 ##!include "include"
 
-print("#[foo]#")
+## local foo = "bar"
+print(#[foo]#)
+
+##-------------------------------------------------------------------------------
+##-- Envrionment Variables
+##-- Globals can be defined in the preprocessor and used in plua code.
+##-------------------------------------------------------------------------------
+
+## if debug then
+print("Debug Mode")
+## else
+print("Relase Mode")
+## end
+```
+
+Command:
+```
+$ plua test.plua test.lua --format --env debug=true
+Wrote test.lua
 ```
 
 Outputted Lua code:
 
 ```lua
 function isTest()
-  return true
+	return true
 end
 assert(isTest())
+
 assert(8.0 == 8)
+
 do
-  local v = 1
-  v = v + 2
-  assert(v == 3)
+	local v = 1
+	v = v + 2
+	assert(v == 3)
 end
-local foo = "bar"
+
 print("bar")
-```
+
+print("Relase Mode")```

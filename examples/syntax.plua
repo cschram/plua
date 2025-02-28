@@ -43,7 +43,7 @@ assert(#[pow(2, 3)]# == 8)
 ##-- end
 ##-- ```
 ## function increment(identifier, amount)
-  #[identifier]# = #[identifier]# + #[amount]#
+  #{identifier}# = #{identifier}# + #[amount]#
 ## end
 
 ##-- This should evaluate to the following resulting code:
@@ -70,4 +70,15 @@ end
 ##!include "include"
 
 ## local foo = "bar"
-print("#[foo]#")
+print(#[foo]#)
+
+##-------------------------------------------------------------------------------
+##-- Envrionment Variables
+##-- Globals can be defined in the preprocessor and used in plua code.
+##-------------------------------------------------------------------------------
+
+## if debug then
+print("Debug Mode")
+## else
+print("Relase Mode")
+## end
