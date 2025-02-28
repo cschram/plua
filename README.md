@@ -1,10 +1,11 @@
 # Plua
 
-A Lua preprocessor/metaprogramming language.
+A WIP Lua preprocessor/metaprogramming language, inspired by the preprocessor of [Nelua](https://nelua.io/overview/#preprocessor).
 
 ## To Do
 
 - [ ] Meta includes
+- [ ] CLI 
 - [ ] Environment globals
 
 ## Example
