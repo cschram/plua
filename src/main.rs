@@ -32,33 +32,24 @@ fn main() -> Result<()> {
     };
 
     match Plua::parse(&meta_filename, &source) {
-        Ok(program) => {
-            if cli.meta {
-                fs::write(&meta_filename, &program.metaprogram)?;
+        Ok(program) => match plua.exec(&program) {
+            Ok(output) => {
+                fs::write(&cli.output, output)?;
                 if !cli.quiet {
-                    println!("Wrote lua output {}", &meta_filename);
+                    println!("Wrote lua {}", &cli.output);
                 }
+                Ok(())
             }
-
-            match plua.exec(&program) {
-                Ok(output) => {
-                    fs::write(&cli.output, output)?;
-                    if !cli.quiet {
-                        println!("Wrote metaprogram {}", &cli.output);
-                    }
-                    Ok(())
+            Err(e) => {
+                fs::write(&meta_filename, &program.metaprogram)?;
+                fs::write(&error_log_filename, e.to_string())?;
+                if !cli.quiet {
+                    println!("Wrote metaprogram {}", &meta_filename);
+                    println!("Wrote error log {}", &error_log_filename);
                 }
-                Err(e) => {
-                    fs::write(&meta_filename, &program.metaprogram)?;
-                    fs::write(&error_log_filename, e.to_string())?;
-                    if !cli.quiet {
-                        println!("Wrote metaprogram {}", &meta_filename);
-                        println!("Wrote error log {}", &error_log_filename);
-                    }
-                    Err(e)
-                }
+                Err(e)
             }
-        }
+        },
         Err(e) => {
             fs::write(&error_log_filename, e.to_string())?;
             if !cli.quiet {

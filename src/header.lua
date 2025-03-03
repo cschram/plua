@@ -9,8 +9,6 @@ local __output_lines = {}
 function __emit(line)
 	if line then
 		table.insert(__output_lines, line)
-	else
-		table.insert(__output_lines, "")
 	end
 end
 

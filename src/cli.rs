@@ -4,17 +4,13 @@ use clap::Parser;
 #[derive(Parser)]
 #[command(name = "Plua")]
 #[command(version = "0.1")]
-#[command(about = "Lua preprocessor/metaprogramming language.")]
+#[command(about = "Lua preprocessor")]
 pub struct PluaCli {
     /// Input plua file.
     pub input: String,
 
     /// Output lua file.
     pub output: String,
-
-    /// Output the metaprogram as a .meta.lua file alongside the output.
-    #[arg(short, long)]
-    pub meta: bool,
 
     /// Pass an environment global in the format name=value.
     #[arg(short, long)]
