@@ -1,11 +1,8 @@
 mod cli;
-mod plua;
 
-use crate::{
-    cli::{PluaCli, PluaEnvValue},
-    plua::Plua,
-};
+use crate::cli::{PluaCli, PluaEnvValue};
 use anyhow::Result;
+use plua::Plua;
 use std::{fs, path::PathBuf};
 
 fn main() -> Result<()> {
