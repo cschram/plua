@@ -3,14 +3,25 @@
 -------------------------------------------------------------------------------
 
 ## local test = true
-function isTest()
+local function is_test()
   ## if test then
-  return true
+    return true
   ## else
-  return false
+    return false
   ## end
 end
-assert(isTest())
+assert(is_test())
+
+-------------------------------------------------------------------------------
+-- Environment Variables
+-- Globals can be defined in the preprocessor and used in Plua code.
+-------------------------------------------------------------------------------
+
+## if debug then
+  print("Debug Mode")
+## else
+  print("Release Mode")
+## end
 
 -------------------------------------------------------------------------------
 -- Defining functions and inlining values
@@ -24,12 +35,16 @@ assert(#[pow(2, 3)]# == 8)
 
 -------------------------------------------------------------------------------
 -- Emitting code
+-- While `#[value]#` will format `value` as a literal in the output Lua,
+-- `#{value}#` will output `value` as-is, meaning a string can be used as any
+-- piece of Lua code, for example as an identifier. Be aware that types other
+-- than string and number may not behave as you expect when used this way.
 -------------------------------------------------------------------------------
 
 ##-- This evaluates to the following metaprogram code:
 ##-- ```
 ##-- function increment(identifier, amount)
-##--   __emit("  " .. (identifier) .. " = " .. __format_value(identifier) .. " + " .. __format_value(amount))
+##--   __emit("  " .. (identifier) .. " = " .. (identifier) .. " + " .. __format_value(amount))
 ##-- end
 ##-- ```
 ## function increment(identifier, amount)
@@ -43,24 +58,12 @@ do
 end
 
 -------------------------------------------------------------------------------
--- TODO: Meta Program Includes
--- Includes another plua file inline into the metaprogram, allowing metaprogram
--- functions and variables to be used across files.
+-- Meta Program Includes
+-- Other Plua files can be included inline to allow re-use of functions and
+-- values.
 -------------------------------------------------------------------------------
 
 -- Defines a local `foo` as `"bar"`.
 ##!include "include"
 
-## local foo = "bar"
 print(#[foo]#)
-
--------------------------------------------------------------------------------
--- Envrionment Variables
--- Globals can be defined in the preprocessor and used in plua code.
--------------------------------------------------------------------------------
-
-## if debug then
-print("Debug Mode")
-## else
-print("Relase Mode")
-## end

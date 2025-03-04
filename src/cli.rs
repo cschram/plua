@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 
 #[derive(Parser)]
@@ -19,6 +19,10 @@ pub struct PluaCli {
     /// Supress stdout logging.
     #[arg(short, long)]
     pub quiet: bool,
+
+    /// Enable debug mode. Metaprograms will be written as a .meta.lua file.
+    #[arg(short, long)]
+    pub debug: bool,
 }
 
 impl PluaCli {

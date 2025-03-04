@@ -7,16 +7,17 @@ A WIP Lua preprocessor, inspired by the preprocessor of [Nelua](https://nelua.io
 - [x] Metaprogramming
     - [x] Compile time Lua
     - [x] Interpolation
-- [x] CLI 
+- [x] CLI
+    - [ ] Glob input
+    - [ ] TOML config
 - [x] Environment globals
-- [ ] Metacode includes
+- [x] Metacode includes
 - [ ] Multiline metacode
-- [ ] Error and warning API
+- [x] Error and warning API
 - [ ] [Lua LS plugin](https://luals.github.io/wiki/plugins/)
 - [ ] Editor syntax highlighting
     - [ ] Vim/Neovim
     - [ ] VS Code
-- [ ] TOML config
 
 ### Possible Features
 
@@ -54,9 +55,9 @@ Plua code:
 ## local test = true
 function isTest()
   ## if test then
-  return true
+    return true
   ## else
-  return false
+    return false
   ## end
 end
 assert(isTest())
@@ -100,25 +101,24 @@ end
 -- Defines a local `foo` as `"bar"`.
 ##!include "include"
 
-## local foo = "bar"
 print(#[foo]#)
 
 -------------------------------------------------------------------------------
--- Envrionment Variables
+-- Environment Variables
 -- Globals can be defined in the preprocessor and used in plua code.
 -------------------------------------------------------------------------------
 
 ## if debug then
-print("Debug Mode")
+  print("Debug Mode")
 ## else
-print("Relase Mode")
+  print("Release Mode")
 ## end
 ```
 
 Command:
 ```
-$ plua test.plua test.lua --format --env debug=true
-Wrote test.lua
+$ plua test.plua test.lua --env debug=true
+Wrote lua test.lua
 ```
 
 Outputted Lua code:
@@ -128,7 +128,7 @@ Outputted Lua code:
 -- Basic if/else structure
 -------------------------------------------------------------------------------
 function isTest()
-  return true
+    return true
 end
 assert(isTest())
 -------------------------------------------------------------------------------
@@ -151,8 +151,8 @@ end
 -- Defines a local `foo` as `"bar"`.
 print("bar")
 -------------------------------------------------------------------------------
--- Envrionment Variables
+-- Environment Variables
 -- Globals can be defined in the preprocessor and used in plua code.
 -------------------------------------------------------------------------------
-print("Relase Mode")
+  print("Debug Mode")
 ```

@@ -6,19 +6,17 @@
 local __output_lines = {}
 
 --- Emit output lua code
-function __emit(line)
-	if line then
-		table.insert(__output_lines, line)
-	end
+local function __emit(line)
+	table.insert(__output_lines, line or "")
 end
 
 --- Check if a value is an array
-function __is_array(val)
+local function __is_array(val)
 	if type(val) ~= "table" then
 		return false
 	end
 	local count = 0
-	for k, v in pairs(val) do
+	for _, v in pairs(val) do
 		if type(v) ~= "number" then
 			return false
 		else
@@ -34,7 +32,7 @@ function __is_array(val)
 end
 
 --- Format a value into a Lua literal
-function __format_value(val)
+local function __format_value(val)
 	local t = type(val)
 	if t == "string" then
 		return '"' .. val .. '"'

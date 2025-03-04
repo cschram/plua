@@ -1,0 +1,2 @@
+## Plua.warn("Test warning")
+## Plua.error("Test error")
