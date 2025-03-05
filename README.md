@@ -7,22 +7,16 @@ A WIP Lua preprocessor, inspired by the preprocessor of [Nelua](https://nelua.io
 - [x] Metaprogramming
     - [x] Compile time Lua
     - [x] Interpolation
+    - [x] Metacode includes
+    - [x] Emit compiler warnings and errors
 - [x] CLI
+    - [x] Compilation
     - [ ] Glob input
-    - [ ] TOML config
 - [x] Environment globals
-- [x] Metacode includes
-- [ ] Multiline metacode
-- [x] Error and warning API
 - [ ] [Lua LS plugin](https://luals.github.io/wiki/plugins/)
 - [ ] Editor syntax highlighting
     - [ ] Vim/Neovim
     - [ ] VS Code
-
-### Possible Features
-
-- [ ] Utilities/common library for metaprograms
-- [ ] AST API for code generation in metaprograms
 
 ## Usage
 
@@ -39,6 +33,7 @@ Arguments:
 Options:
   -e, --env <ENV>  Pass an environment global in the format name=value
   -q, --quiet      Supress stdout logging
+  -d, --debug      Enable debug mode. Metaprograms will be written as a .meta.lua file
   -h, --help       Print help
   -V, --version    Print version
 ```
@@ -53,35 +48,46 @@ Plua code:
 -------------------------------------------------------------------------------
 
 ## local test = true
-function isTest()
+local function is_test()
   ## if test then
     return true
   ## else
     return false
   ## end
 end
-assert(isTest())
+assert(is_test())
+
+-------------------------------------------------------------------------------
+-- Environment Variables
+-- Globals can be defined in the preprocessor and used in Plua code.
+-------------------------------------------------------------------------------
+
+## if debug then
+  print("Debug Mode")
+## else
+  print("Release Mode")
+## end
 
 -------------------------------------------------------------------------------
 -- Defining functions and inlining values
 -------------------------------------------------------------------------------
 
-## function pow(n, e)
-##   return n ^ e
-## end
+##```
+  function pow(n, e)
+    return n ^ e
+  end
+```##
 
 assert(#[pow(2, 3)]# == 8)
 
 -------------------------------------------------------------------------------
 -- Emitting code
+-- While `#[value]#` will format `value` as a literal in the output Lua,
+-- `#{value}#` will output `value` as-is, meaning a string can be used as any
+-- piece of Lua code, for example as an identifier. Be aware that types other
+-- than string and number may not behave as you expect when used this way.
 -------------------------------------------------------------------------------
 
-##-- This evaluates to the following metaprogram code:
-##-- ```
-##-- function increment(identifier, amount)
-##--   __emit("  " .. (identifier) .. " = " .. __format_value(identifier) .. " + " .. __format_value(amount))
-##-- end
-##-- ```
 ## function increment(identifier, amount)
   #{identifier}# = #{identifier}# + #[amount]#
 ## end
@@ -93,9 +99,9 @@ do
 end
 
 -------------------------------------------------------------------------------
--- TODO: Meta Program Includes
--- Includes another plua file inline into the metaprogram, allowing metaprogram
--- functions and variables to be used across files.
+-- Meta Program Includes
+-- Other Plua files can be included inline to allow re-use of functions and
+-- values.
 -------------------------------------------------------------------------------
 
 -- Defines a local `foo` as `"bar"`.
@@ -104,55 +110,60 @@ end
 print(#[foo]#)
 
 -------------------------------------------------------------------------------
--- Environment Variables
--- Globals can be defined in the preprocessor and used in plua code.
+-- Meta Program Built-ins
+-- Apart from the Lua 5.4 standard library, a collection of functions are
+-- available to metaprograms under the `Plua` namespace.
 -------------------------------------------------------------------------------
 
-## if debug then
-  print("Debug Mode")
-## else
-  print("Release Mode")
-## end
+##```
+-- Emit Lua code.
+Plua.emit("local one = 1")
+-- Format a value as a Lua literal (identical to #[]#)
+Plua.emit(Plua.format_value({ table = true }))
+-- Emit a compiler warning
+Plua.warn("Test warning")
+-- Emit a compiler error, immediately stopping metaprogram execution
+-- Plua.error("Test error")
+
+```##
 ```
 
 Command:
 ```
-$ plua test.plua test.lua --env debug=true
+$ plua examples/syntax.plua examples/syntax.lua --env debug=true
 Wrote lua test.lua
 ```
 
 Outputted Lua code:
 
 ```lua
--------------------------------------------------------------------------------
--- Basic if/else structure
--------------------------------------------------------------------------------
-function isTest()
+
+local function is_test()
     return true
 end
-assert(isTest())
--------------------------------------------------------------------------------
--- Defining functions and inlining values
--------------------------------------------------------------------------------
+assert(is_test())
+
+
+  print("Debug Mode")
+
+
+
 assert(8.0 == 8)
--------------------------------------------------------------------------------
--- Emitting code
--------------------------------------------------------------------------------
+
+
+
 do
   local v = 1
   v = v + 2
   assert(v == 3)
 end
--------------------------------------------------------------------------------
--- TODO: Meta Program Includes
--- Includes another plua file inline into the metaprogram, allowing metaprogram
--- functions and variables to be used across files.
--------------------------------------------------------------------------------
--- Defines a local `foo` as `"bar"`.
+
+
+
+
 print("bar")
--------------------------------------------------------------------------------
--- Environment Variables
--- Globals can be defined in the preprocessor and used in plua code.
--------------------------------------------------------------------------------
-  print("Debug Mode")
+
+
+local one = 1
+{table=true}
 ```

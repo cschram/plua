@@ -27,9 +27,11 @@ assert(is_test())
 -- Defining functions and inlining values
 -------------------------------------------------------------------------------
 
-## function pow(n, e)
-##   return n ^ e
-## end
+##```
+  function pow(n, e)
+    return n ^ e
+  end
+```##
 
 assert(#[pow(2, 3)]# == 8)
 
@@ -41,12 +43,6 @@ assert(#[pow(2, 3)]# == 8)
 -- than string and number may not behave as you expect when used this way.
 -------------------------------------------------------------------------------
 
-##-- This evaluates to the following metaprogram code:
-##-- ```
-##-- function increment(identifier, amount)
-##--   __emit("  " .. (identifier) .. " = " .. (identifier) .. " + " .. __format_value(amount))
-##-- end
-##-- ```
 ## function increment(identifier, amount)
   #{identifier}# = #{identifier}# + #[amount]#
 ## end
@@ -67,3 +63,21 @@ end
 ##!include "include"
 
 print(#[foo]#)
+
+-------------------------------------------------------------------------------
+-- Meta Program Built-ins
+-- Apart from the Lua 5.4 standard library, a collection of functions are
+-- available to metaprograms under the `Plua` namespace.
+-------------------------------------------------------------------------------
+
+##```
+-- Emit Lua code.
+Plua.emit("local one = 1")
+-- Format a value as a Lua literal (identical to #[]#)
+Plua.emit(Plua.format_value({ table = true }))
+-- Emit a compiler warning
+Plua.warn("Test warning")
+-- Emit a compiler error, immediately stopping metaprogram execution
+-- Plua.error("Test error")
+
+```##

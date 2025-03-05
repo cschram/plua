@@ -86,7 +86,7 @@ impl Plua {
                             Rule::MetaValueInterpolate => {
                                 let inner_lua =
                                     inner_pair.into_inner().next().context("Expected Lua")?;
-                                line.push(format!("__format_value({})", inner_lua.as_str()));
+                                line.push(format!("Plua.format_value({})", inner_lua.as_str()));
                             }
                             Rule::MetaCodeInterpolate => {
                                 let inner_lua =
@@ -101,7 +101,7 @@ impl Plua {
                             }
                         }
                     }
-                    metaprogram.push(format!("__emit({})", line.join(" .. ")));
+                    metaprogram.push(format!("Plua.emit({})", line.join(" .. ")));
                 }
                 Rule::MetaLine => {
                     let metaline_content =

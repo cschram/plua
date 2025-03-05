@@ -1,10 +1,13 @@
 Program = _{ SOI ~ (Line ~ EOL)* ~ (Line ~ EOI) }
 
 Line = _{
-    MetaInclude
+	Comment
+  | MetaInclude
   | MetaLine
   | LuaLine
 }
+
+Comment = _{ "--" ~ Character* }
 
 // Meta includes:
 // ```
@@ -18,15 +21,34 @@ DoubleQuote = _{ "\"" }
 
 Filename = { (!DoubleQuote ~ Character)+ }
 
-// Single-line preprocessor line:
+// Preprocessor meta-code line
+MetaLine = { MetaMultiLine | MetaSingleLine }
+
+// Single-line preprocessor code:
 // ```
 // ## local foo = "bar"
 // ```
-MetaLine = { MetaLinePrefix ~ MetaLineContent }
+MetaSingleLine = _{ MetaSingleLinePrefix ~ MetaSingleLineContent }
 
-MetaLinePrefix = _{ Whitespace* ~ "##" }
+MetaSingleLinePrefix = _{ Whitespace* ~ "##" }
 
-MetaLineContent = { Character* }
+MetaSingleLineContent = { Character* }
+
+// Multi-line preprocessor code:
+// ```
+// ##```
+//   function foo()
+//     return "foo"
+//   end
+// ```##
+// ```
+MetaMultiLine = _{ MetaMultiLinePrefix ~ MetaMultiLineContent ~ MetaMultiLineSuffix }
+
+MetaMultiLinePrefix = _{ Whitespace* ~ "##```" }
+
+MetaMultiLineSuffix = _{ "```##" }
+
+MetaMultiLineContent = { (!(MetaMultiLinePrefix | MetaMultiLineSuffix) ~ ANY)* }
 
 // Preprocessor value interpolation
 // ```
@@ -60,3 +82,4 @@ EOL = _{ "\n" | "\r\n" }
 Whitespace = _{ " " | "\t" }
 
 Character = _{ !EOL ~ ANY }
+
