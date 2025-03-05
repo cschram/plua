@@ -32,9 +32,7 @@ function Plua.format_value(val)
 	elseif t == "table" then
 		local fields = {}
 		if Plua.is_array(val) then
-			for _, item in pairs(val) do
-				table.insert(fields, item)
-			end
+      fields = val
 		else
 			for k, v in pairs(val) do
 				table.insert(fields, k .. "=" .. Plua.format_value(v))
