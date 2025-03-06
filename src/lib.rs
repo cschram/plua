@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use log::{error, warn};
 use mlua::{IntoLua, Lua};
 use pest::Parser;

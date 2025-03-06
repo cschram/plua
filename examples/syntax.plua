@@ -4,11 +4,11 @@
 
 ## local test = true
 local function is_test()
-  ## if test then
-    return true
-  ## else
-    return false
-  ## end
+    ## if test then
+        return true
+    ## else
+        return false
+    ## end
 end
 assert(is_test())
 
@@ -18,9 +18,9 @@ assert(is_test())
 -------------------------------------------------------------------------------
 
 ## if debug then
-  print("Debug Mode")
+    print("Debug Mode")
 ## else
-  print("Release Mode")
+    print("Release Mode")
 ## end
 
 -------------------------------------------------------------------------------
@@ -28,10 +28,11 @@ assert(is_test())
 -------------------------------------------------------------------------------
 
 ##```
-  function pow(n, e)
+function pow(n, e)
     return n ^ e
-  end
+end
 ```##
+
 
 assert(#[pow(2, 3)]# == 8)
 
@@ -44,13 +45,13 @@ assert(#[pow(2, 3)]# == 8)
 -------------------------------------------------------------------------------
 
 ## function increment(identifier, amount)
-  #{identifier}# = #{identifier}# + #[amount]#
+    #{identifier}# = #{identifier}# + #[amount]#
 ## end
 
 do
-  local v = 1
-  ## increment("v", 2)
-  assert(v == 3)
+    local v = 1
+    ## increment("v", 2)
+    assert(v == 3)
 end
 
 -------------------------------------------------------------------------------
@@ -79,5 +80,4 @@ Plua.emit(Plua.format_value({ table = true }))
 Plua.warn("Test warning")
 -- Emit a compiler error, immediately stopping metaprogram execution
 -- Plua.error("Test error")
-
 ```##

@@ -1,6 +1,12 @@
 # Plua
 
-A WIP Lua preprocessor, inspired by the preprocessor of [Nelua](https://nelua.io/overview/#preprocessor).
+<p>
+    <a href="https://github.com/cschram/plua/blob/main/LICENSE">  
+        <img alt="GitHub License" src="https://img.shields.io/github/license/cschram/plua?style=for-the-badge">
+    </a>
+</p>
+
+A WIP Lua preprocessor, inspired by [Nelua's preprocessor](https://nelua.io/overview/#preprocessor).
 
 ## Features
 
@@ -20,7 +26,7 @@ A WIP Lua preprocessor, inspired by the preprocessor of [Nelua](https://nelua.io
 
 ## Usage
 
-```
+````
 $ plua --help
 Lua preprocessor
 
@@ -49,11 +55,11 @@ Plua code:
 
 ## local test = true
 local function is_test()
-  ## if test then
-    return true
-  ## else
-    return false
-  ## end
+    ## if test then
+        return true
+    ## else
+        return false
+    ## end
 end
 assert(is_test())
 
@@ -63,9 +69,9 @@ assert(is_test())
 -------------------------------------------------------------------------------
 
 ## if debug then
-  print("Debug Mode")
+    print("Debug Mode")
 ## else
-  print("Release Mode")
+    print("Release Mode")
 ## end
 
 -------------------------------------------------------------------------------
@@ -73,10 +79,11 @@ assert(is_test())
 -------------------------------------------------------------------------------
 
 ##```
-  function pow(n, e)
+function pow(n, e)
     return n ^ e
-  end
+end
 ```##
+
 
 assert(#[pow(2, 3)]# == 8)
 
@@ -89,13 +96,13 @@ assert(#[pow(2, 3)]# == 8)
 -------------------------------------------------------------------------------
 
 ## function increment(identifier, amount)
-  #{identifier}# = #{identifier}# + #[amount]#
+    #{identifier}# = #{identifier}# + #[amount]#
 ## end
 
 do
-  local v = 1
-  ## increment("v", 2)
-  assert(v == 3)
+    local v = 1
+    ## increment("v", 2)
+    assert(v == 3)
 end
 
 -------------------------------------------------------------------------------
@@ -124,46 +131,31 @@ Plua.emit(Plua.format_value({ table = true }))
 Plua.warn("Test warning")
 -- Emit a compiler error, immediately stopping metaprogram execution
 -- Plua.error("Test error")
-
 ```##
-```
+````
 
 Command:
-```
+````
 $ plua examples/syntax.plua examples/syntax.lua --env debug=true
-Wrote lua test.lua
-```
+WARN  [plua] Warning on line 103: Test warning
+INFO  [plua] Wrote lua examples/syntax.lua
+````
 
-Outputted Lua code:
+Resulting Lua code:
 
-```lua
-
+````lua
 local function is_test()
-    return true
+        return true
 end
 assert(is_test())
-
-
-  print("Debug Mode")
-
-
-
+    print("Debug Mode")
 assert(8.0 == 8)
-
-
-
 do
-  local v = 1
-  v = v + 2
-  assert(v == 3)
+    local v = 1
+    v = v + 2
+    assert(v == 3)
 end
-
-
-
-
 print("bar")
-
-
 local one = 1
 {table=true}
-```
+````

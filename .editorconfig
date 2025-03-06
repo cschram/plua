@@ -1,0 +1,3 @@
+[*.{rust, lua, plua}]
+indent_style = space
+indent_size = 4
