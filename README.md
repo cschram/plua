@@ -42,13 +42,13 @@ Options:
   -d, --debug      Enable debug mode. Metaprograms will be written as a .meta.lua file
   -h, --help       Print help
   -V, --version    Print version
-```
+````
 
 ## Example
 
 Plua code:
 
-```lua
+````lua
 -------------------------------------------------------------------------------
 -- Basic if/else structure
 -------------------------------------------------------------------------------
