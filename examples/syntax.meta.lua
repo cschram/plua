@@ -48,62 +48,69 @@ function Plua.format_value(val)
     end
 end
 --- PLUA METAPROGRAM ---
-Plua.emit()
- local test = true
-Plua.emit("local function is_test()")
- if test then
-Plua.emit("        return true")
- else
-Plua.emit("        return false")
- end
-Plua.emit("end")
-Plua.emit("assert(is_test())")
-Plua.emit()
-Plua.emit()
- if debug then
-Plua.emit("    print(\"Debug Mode\")")
- else
-Plua.emit("    print(\"Release Mode\")")
- end
-Plua.emit()
-Plua.emit()
+Plua.emit("print(\"Hello from plua include!\")\n")
 
-function pow(n, e)
-    return n ^ e
+
+Plua.emit("\nfunction log(msg)\n    ")
+if debug then
+
+
+Plua.emit("        print(msg)\n    ")
 end
 
-Plua.emit()
-Plua.emit()
-Plua.emit("assert(" .. Plua.format_value(pow(2, 3)) .. " == 8)")
-Plua.emit()
-Plua.emit()
- function increment(identifier, amount)
-Plua.emit("    " .. (identifier) .. " = " .. (identifier) .. " + " .. Plua.format_value(amount))
- end
-Plua.emit()
-Plua.emit("do")
-Plua.emit("    local v = 1")
- increment("v", 2)
-Plua.emit("    assert(v == 3)")
-Plua.emit("end")
-Plua.emit()
-Plua.emit()
- local foo = "bar"
-Plua.emit()
-Plua.emit()
-Plua.emit("print(" .. Plua.format_value(foo) .. ")")
-Plua.emit()
-Plua.emit()
 
--- Emit Lua code.
-Plua.emit("local one = 1")
--- Format a value as a Lua literal (identical to #[]#)
-Plua.emit(Plua.format_value({ table = true }))
--- Emit a compiler warning
-Plua.warn("Test warning")
--- Emit a compiler error, immediately stopping metaprogram execution
--- Plua.error("Test error")
+Plua.emit("end\n\n")
 
-Plua.emit()
---- PLUA FOOTER ---
-return table.concat(__output_lines, "\n")
+function pow(n, e)
+  return n ^ e
+end
+
+Plua.emit("\n\nlog(")
+Plua.emit(Plua.format_value(pow(2, 4)))
+Plua.emit(")\n\n")
+local hello = "Hello!"
+
+
+Plua.emit("print(")
+Plua.emit(Plua.format_value(hello))
+Plua.emit(")\nprint(\"")
+Plua.emit(hello)
+Plua.emit("\")\n\n")
+function pfunc(name, fn)
+
+
+Plua.emit("    function ")
+Plua.emit(name)
+Plua.emit("()\n        return pcall(")
+Plua.emit(fn)
+Plua.emit(")\n    end\n")
+end
+
+
+Plua.emit("\n")
+pfunc("throw_error", 
+"function()\n    error(\"Throwing!\")\nend"
+)
+
+
+Plua.emit("\nprint(throw_error())\n\n")
+
+function create_logger(prefix)
+    Plua.emit(
+"\n        function(msg)\n            log(\""
+ .. prefix .. 
+": \" .. msg)\n        end\n    "
+)
+end
+
+Plua.emit("\n\nlocal log_pow = ")
+Plua.emit(create_logger("pow"))
+Plua.emit("\n\nprint(log_pow(")
+Plua.emit(Plua.format_value(pow(4, 2)))
+Plua.emit("))\n\n")
+
+Plua.warn("Compiler warning")
+-- Plua.error("Compiler error")
+
+Plua.emit("\n")--- PLUA FOOTER ---
+return table.concat(__output_lines)

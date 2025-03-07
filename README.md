@@ -49,113 +49,98 @@ Options:
 Plua code:
 
 ````lua
--------------------------------------------------------------------------------
--- Basic if/else structure
--------------------------------------------------------------------------------
+##!include "lib"
 
-## local test = true
-local function is_test()
-    ## if test then
-        return true
-    ## else
-        return false
-    ## end
+function log(msg)
+    ##if debug then
+        print(msg)
+    ##end
 end
-assert(is_test())
 
--------------------------------------------------------------------------------
--- Environment Variables
--- Globals can be defined in the preprocessor and used in Plua code.
--------------------------------------------------------------------------------
-
-## if debug then
-    print("Debug Mode")
-## else
-    print("Release Mode")
-## end
-
--------------------------------------------------------------------------------
--- Defining functions and inlining values
--------------------------------------------------------------------------------
-
-##```
+##[[
 function pow(n, e)
-    return n ^ e
+  return n ^ e
 end
-```##
+]]
 
+log(#[pow(2, 4)]#)
 
-assert(#[pow(2, 3)]# == 8)
+##local hello = "Hello!"
+print(#[hello]#)
+print("#|hello|#")
 
--------------------------------------------------------------------------------
--- Emitting code
--- While `#[value]#` will format `value` as a literal in the output Lua,
--- `#{value}#` will output `value` as-is, meaning a string can be used as any
--- piece of Lua code, for example as an identifier. Be aware that types other
--- than string and number may not behave as you expect when used this way.
--------------------------------------------------------------------------------
+##function pfunc(name, fn)
+    function #|name|#()
+        return pcall(#|fn|#)
+    end
+##end
 
-## function increment(identifier, amount)
-    #{identifier}# = #{identifier}# + #[amount]#
-## end
+##pfunc("throw_error", #{function()
+    error("Throwing!")
+end}#)
 
-do
-    local v = 1
-    ## increment("v", 2)
-    assert(v == 3)
+print(throw_error())
+
+##[[
+function create_logger(prefix)
+    Plua.emit(#{
+        function(msg)
+            log("}# .. prefix .. #{: " .. msg)
+        end
+    }#)
 end
+]]
 
--------------------------------------------------------------------------------
--- Meta Program Includes
--- Other Plua files can be included inline to allow re-use of functions and
--- values.
--------------------------------------------------------------------------------
+local log_pow = #|create_logger("pow")|#
 
--- Defines a local `foo` as `"bar"`.
-##!include "include"
+print(log_pow(#[pow(4, 2)]#))
 
-print(#[foo]#)
+##[[
+Plua.warn("Compiler warning")
+-- Plua.error("Compiler error")
+]]
 
--------------------------------------------------------------------------------
--- Meta Program Built-ins
--- Apart from the Lua 5.4 standard library, a collection of functions are
--- available to metaprograms under the `Plua` namespace.
--------------------------------------------------------------------------------
-
-##```
--- Emit Lua code.
-Plua.emit("local one = 1")
--- Format a value as a Lua literal (identical to #[]#)
-Plua.emit(Plua.format_value({ table = true }))
--- Emit a compiler warning
-Plua.warn("Test warning")
--- Emit a compiler error, immediately stopping metaprogram execution
--- Plua.error("Test error")
-```##
 ````
 
 Command:
 ````
-$ plua examples/syntax.plua examples/syntax.lua --env debug=true
+$ plua examples/syntax.plua examples/syntax.lua 
 WARN  [plua] Warning on line 103: Test warning
 INFO  [plua] Wrote lua examples/syntax.lua
 ````
 
-Resulting Lua code:
+Resulting Lua code (unformatted):
 
 ````lua
-local function is_test()
-        return true
-end
-assert(is_test())
-    print("Debug Mode")
-assert(8.0 == 8)
-do
-    local v = 1
-    v = v + 2
-    assert(v == 3)
-end
-print("bar")
-local one = 1
-{table=true}
+print("Hello from plua include!")
+
+function log(msg)
+            print(msg)
+    end
+
+
+
+log(16.0)
+
+print("Hello!")
+print("Hello!")
+
+
+    function throw_error()
+        return pcall(function()
+    error("Throwing!")
+end)
+    end
+
+print(throw_error())
+
+
+
+local log_pow = 
+        function(msg)
+            log("pow: " .. msg)
+        end
+    
+
+print(log_pow(16.0))
 ````
