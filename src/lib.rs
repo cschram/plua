@@ -110,10 +110,7 @@ impl Plua {
                     metaprogram.push(format!("\"{}\"", Self::escape(pair.as_str())));
                 }
                 Rule::MetaValueInterpolateBody => {
-                    metaprogram.push(format!(
-                        "Plua.emit(Plua.format_value({}))",
-                        Self::escape(pair.as_str())
-                    ));
+                    metaprogram.push(format!("Plua.emit(Plua.format_value({}))", pair.as_str()));
                 }
                 Rule::MetaExpressionInterpolateBody => {
                     metaprogram.push(format!("Plua.emit({})", pair.as_str()));

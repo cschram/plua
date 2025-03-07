@@ -14,9 +14,9 @@ end
 
 log(#[pow(2, 4)]#)
 
-##local hello = "Hello!"
-print(#[hello]#)
-print("#|hello|#")
+local hello = "world"
+print(#["hello"]#)
+print(#|"hello"|#)
 
 ##function pfunc(name, fn)
     function #|name|#()
@@ -34,15 +34,15 @@ print(throw_error())
 function create_logger(prefix)
     Plua.emit(#{
         function(msg)
-            log("}# .. prefix .. #{: " .. msg)
+            log("[#|prefix|#]: " .. msg)
         end
     }#)
 end
 ]]
 
-local log_pow = #|create_logger("pow")|#
+local log = #|create_logger("Plua")|#
 
-print(log_pow(#[pow(4, 2)]#))
+print(log(":)"))
 
 ##[[
 Plua.warn("Compiler warning")
