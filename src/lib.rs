@@ -128,6 +128,9 @@ impl Plua {
     }
 
     fn escape(s: &str) -> String {
-        s.replace("\"", "\\\"").replace("\n", "\\n").to_string()
+        s.replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .to_string()
     }
 }

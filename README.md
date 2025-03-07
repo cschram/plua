@@ -144,3 +144,5 @@ local log_pow =
 
 print(log_pow(16.0))
 ````
+
+See the [examples folder](https://github.com/cschram/plua/tree/main/examples) for more.
