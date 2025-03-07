@@ -1,85 +1,78 @@
-Program = _{ SOI ~ (Line ~ EOL)* ~ (Line ~ EOI) }
+Program = _{ SOI ~ Content* ~ EOI }
 
-Line = _{
-	Comment
-  | MetaInclude
-  | MetaLine
-  | LuaLine
+Content = _{ Meta | Lua+ | EOL }
+
+Lua = { LuaChar+ }
+
+LuaChar = _{ !Reserved ~ ANY }
+
+Reserved = { MetaReserved | MetaCodeInterpolatePrefix | MetaCodeInterpolateSuffix }
+
+MetaReserved = {
+    MetaCodeMultiPrefix
+  | MetaCodeMultiSuffix
+  | MetaIncludePrefix
+  | MetaCodeSinglePrefix
+  | MetaValueInterpolatePrefix
+  | MetaValueInterpolateSuffix
+  | MetaExpressionInterpolatePrefix
+  | MetaExpressionInterpolateSuffix
 }
 
-Comment = _{ "--" ~ Character* }
+EOL = _{ "\n" | "\r\n" }
 
-// Meta includes:
-// ```
-// ##!include "myinclude"
-// ```
-MetaInclude = { MetaIncludePrefix ~ DoubleQuote ~ Filename ~ DoubleQuote ~ Whitespace* }
+End = { EOL | &EOI }
 
-MetaIncludePrefix = _{ Whitespace* ~ "##!include" ~ Whitespace* }
+Character = _{ !(EOL | Reserved) ~ ANY }
 
-DoubleQuote = _{ "\"" }
+Quote = _{ "\"" }
 
-Filename = { (!DoubleQuote ~ Character)+ }
+Meta = _{
+    &"#" ~ (MetaInclude | MetaCode | MetaValueInterpolate | MetaExpressionInterpolate)
+}
 
-// Preprocessor meta-code line
-MetaLine = { MetaMultiLine | MetaSingleLine }
+MetaInclude = _{ MetaIncludePrefix ~ Quote ~ MetaIncludeFile ~ Quote ~ End }
 
-// Single-line preprocessor code:
-// ```
-// ## local foo = "bar"
-// ```
-MetaSingleLine = _{ MetaSingleLinePrefix ~ MetaSingleLineContent }
+MetaIncludePrefix = _{ "##!include " }
 
-MetaSingleLinePrefix = _{ Whitespace* ~ "##" }
+MetaIncludeFile = { (!Quote ~ Character)* }
 
-MetaSingleLineContent = { Character* }
+MetaCode = _{ &"##" ~ (MetaCodeMulti | MetaCodeSingle) }
 
-// Multi-line preprocessor code:
-// ```
-// ##```
-//   function foo()
-//     return "foo"
-//   end
-// ```##
-// ```
-MetaMultiLine = _{ MetaMultiLinePrefix ~ MetaMultiLineContent ~ MetaMultiLineSuffix }
+MetaCodeMulti = _{ MetaCodeMultiPrefix ~ MetaCodeMultiBody* ~ MetaCodeMultiSuffix }
 
-MetaMultiLinePrefix = _{ Whitespace* ~ "##```" }
+MetaCodeMultiPrefix = _{ "##[[" }
 
-MetaMultiLineSuffix = _{ "```##" }
+MetaCodeMultiSuffix = _{ "]]" }
 
-MetaMultiLineContent = { (!(MetaMultiLinePrefix | MetaMultiLineSuffix) ~ ANY)* }
+MetaCodeMultiBody = { MetaCodeInterpolate | LuaChar+ }
 
-// Preprocessor value interpolation
-// ```
-// print(#[foo]#)
-// ```
-MetaValueInterpolate = { MetaValueInterpolatePrefix ~ Lua ~ MetaValueInterpolateSuffix }
+MetaCodeSingle = _{ MetaCodeSinglePrefix ~ MetaCodeSingleBody* ~ End }
 
-MetaValueInterpolatePrefix = _{ "#[" }
+MetaCodeSinglePrefix = _{ "##" }
 
-MetaValueInterpolateSuffix = _{ "]#" }
+MetaCodeSingleBody = { MetaCodeInterpolate | Character+ }
 
-// Preprocessor code interpolation
-// ```
-// ## function increment(ident, inc)
-//   #{ident}# = #{ident}# + #[inc]#
-// ## end
-MetaCodeInterpolate = { MetaCodeInterpolatePrefix ~ Lua ~ MetaCodeInterpolateSuffix }
+MetaCodeInterpolate = _{ MetaCodeInterpolatePrefix ~ MetaCodeInterpolateBody ~ MetaCodeInterpolateSuffix }
 
 MetaCodeInterpolatePrefix = _{ "#{" }
 
 MetaCodeInterpolateSuffix = _{ "}#" }
 
-// Any lua code
-LuaLine = { (MetaValueInterpolate | MetaCodeInterpolate | Lua)* }
+MetaCodeInterpolateBody = { LuaChar* }
 
-Lua = { (!(MetaValueInterpolatePrefix | MetaValueInterpolateSuffix | MetaCodeInterpolatePrefix | MetaCodeInterpolateSuffix) ~ Character)+ }
+MetaValueInterpolate = _{ MetaValueInterpolatePrefix ~ MetaValueInterpolateBody ~ MetaValueInterpolateSuffix }
 
-// Common rules
-EOL = _{ "\n" | "\r\n" }
+MetaValueInterpolatePrefix = _{ "#[" }
 
-Whitespace = _{ " " | "\t" }
+MetaValueInterpolateSuffix = _{ "]#" }
 
-Character = _{ !EOL ~ ANY }
+MetaValueInterpolateBody = { LuaChar* }
 
+MetaExpressionInterpolate = _{ MetaExpressionInterpolatePrefix ~ MetaExpressionInterpolateBody ~ MetaExpressionInterpolateSuffix }
+
+MetaExpressionInterpolatePrefix = _{ "#|" }
+
+MetaExpressionInterpolateSuffix = _{ "|#" }
+
+MetaExpressionInterpolateBody = { LuaChar* }

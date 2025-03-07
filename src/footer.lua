@@ -1,3 +1,2 @@
-
 --- PLUA FOOTER ---
-return table.concat(__output_lines, "\n")
+return table.concat(__output_lines)
