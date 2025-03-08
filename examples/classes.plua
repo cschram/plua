@@ -1,10 +1,16 @@
-##function class(name)
+##function class(name, base)
   local #|name|# = {}
   function #|name|#:new(...)
+    self.__index = self
+    setmetatable(self, { __index = #|base or "self"|# })
+    ##if base then
+      #|name|#.super = #|base|#
+    ##end
     local obj = {}
     setmetatable(obj, self)
-    self.__index = self
-    obj:init(...)
+    if type(obj.init) == "function" then
+      obj:init(...)
+    end
     return obj
   end
 ##end
@@ -20,5 +26,11 @@ function Person:greet()
   print("Hello, I am " .. self.name .. ", and I am " .. self.age .. " years old.")
 end
 
-local p = Person:new("Corey", 33)
+##class("Corey", "Person")
+
+function Corey:init()
+  Corey.super.init(self, "Corey", 33)
+end
+
+local p = Corey:new()
 p:greet()

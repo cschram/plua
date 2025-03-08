@@ -62,6 +62,7 @@ impl Plua {
     }
 
     pub fn exec(&self, program: &PluaProgram) -> Result<String> {
+        std::fs::write("syntax.meta.lua", &program.metaprogram)?;
         let output: String = self
             .lua
             .load(&program.metaprogram)
@@ -97,16 +98,29 @@ impl Plua {
                     );
                 }
                 Rule::MetaCodeSingleBody | Rule::MetaCodeMultiBody => {
-                    let mut content = pair.as_str().to_string();
-                    let maybe_inner = pair.into_inner().next();
-                    if let Some(inner) = maybe_inner {
-                        if matches!(inner.as_rule(), Rule::MetaCodeInterpolateBody) {
-                            content = format!("\"{}\"", Self::escape(inner.as_str()));
+                    let pair_body = pair.as_str().to_string();
+                    let mut inner_body = vec![];
+                    for inner in pair.into_inner() {
+                        match inner.as_rule() {
+                            Rule::MetaCodeBlockBody => {
+                                inner_body.push(format!("\"{}\"", Self::escape(inner.as_str())));
+                            }
+                            Rule::MetaValueInterpolateBody => {
+                                inner_body.push(format!("Plua.format_value({})", inner.as_str()));
+                            }
+                            Rule::MetaExpressionInterpolateBody => {
+                                inner_body.push(format!("{}", inner.as_str()));
+                            }
+                            _ => {}
                         }
                     }
-                    metaprogram.push(content);
+                    if inner_body.is_empty() {
+                        metaprogram.push(pair_body);
+                    } else {
+                        metaprogram.push(inner_body.join(" .. "));
+                    }
                 }
-                Rule::MetaCodeInterpolateBody => {
+                Rule::MetaCodeBlockBody => {
                     metaprogram.push(format!("\"{}\"", Self::escape(pair.as_str())));
                 }
                 Rule::MetaValueInterpolateBody => {

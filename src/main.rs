@@ -1,20 +1,25 @@
-use anyhow::{Error, Result, anyhow};
+use anyhow::{anyhow, Context, Error, Result};
 use clap::Parser;
+use glob::glob;
 use log::{error, info};
 use plua::Plua;
 use simple_logger::SimpleLogger;
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 #[derive(Parser)]
 #[command(name = "Plua")]
-#[command(version = "0.1")]
+#[command(version = "0.1-alpha")]
 #[command(about = "Lua preprocessor")]
 pub struct PluaCli {
-    /// Input plua file.
-    pub input: String,
+    /// Source plua file.
+    pub source: String,
 
-    /// Output lua file.
-    pub output: String,
+    /// Output directory. If omitted, the source directory will be used.
+    #[arg(short, long)]
+    pub output: Option<String>,
 
     /// Pass an environment global in the format name=value.
     #[arg(short, long)]
@@ -30,10 +35,6 @@ pub struct PluaCli {
 }
 
 impl PluaCli {
-    pub fn parse_args() -> Self {
-        Self::parse()
-    }
-
     pub fn parse_env(&self) -> Result<Vec<PluaEnv>> {
         let mut env = vec![];
         for e in self.env.iter() {
@@ -76,6 +77,27 @@ fn report_error(err: Error) {
     }
 }
 
+fn write_lua(filename: &str, source: &str) -> Result<()> {
+    match stylua_lib::format_code(
+        source,
+        stylua_lib::Config::new(),
+        None,
+        stylua_lib::OutputVerification::None,
+    )
+    .context("Failed to format lua")
+    {
+        Ok(formatted) => {
+            fs::write(filename, formatted)?;
+        }
+        Err(err) => {
+            report_error(err);
+            // Fail gracefull and write the unformatted code so it can be debugged.
+            fs::write(filename, source)?;
+        }
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     SimpleLogger::new()
         .with_colors(true)
@@ -83,47 +105,71 @@ fn main() -> Result<()> {
         .init()
         .unwrap();
 
-    let cli = PluaCli::parse_args();
-    let source = fs::read_to_string(&cli.input)?;
+    let cli = PluaCli::parse();
     let mut plua = Plua::new()?;
 
-    for env in cli.parse_env()? {
-        match &env.value {
-            PluaEnvValue::String(s) => plua.set_global(&env.name, s.clone())?,
-            PluaEnvValue::Boolean(b) => plua.set_global(&env.name, *b)?,
-            PluaEnvValue::Number(n) => plua.set_global(&env.name, *n)?,
-        }
-    }
+    for file in glob(&cli.source)? {
+        let path = file?.to_str().unwrap().to_string();
+        println!("{}", path);
+        let source = fs::read_to_string(&path)?;
+        let source_filename = Path::new(&path)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        let dest_dir = match &cli.output {
+            Some(dir) => dir,
+            None => Path::new(&path).parent().unwrap().to_str().unwrap(),
+        };
+        let dest_file = {
+            let mut p = PathBuf::new();
+            p.push(&dest_dir);
+            p.push(&source_filename);
+            p.set_extension("lua");
+            p.to_str().unwrap().to_owned()
+        };
+        let meta_file = {
+            let mut p = PathBuf::new();
+            p.push(&dest_dir);
+            p.push(&source_filename);
+            p.set_extension("meta.lua");
+            p.to_str().unwrap().to_owned()
+        };
+        fs::create_dir_all(&dest_dir)?;
 
-    match Plua::compile(&cli.input, &source) {
-        Ok(program) => {
-            if cli.debug {
-                let meta_filename = {
-                    let mut p = PathBuf::new();
-                    p.push(&cli.output);
-                    p.set_extension("meta.lua");
-                    p.to_str().unwrap().to_owned()
-                };
-                fs::write(&meta_filename, &program.metaprogram)?;
-                if !cli.quiet {
-                    info!("Wrote metaprogram {}", &meta_filename);
-                }
+        for env in cli.parse_env()? {
+            match &env.value {
+                PluaEnvValue::String(s) => plua.set_global(&env.name, s.clone())?,
+                PluaEnvValue::Boolean(b) => plua.set_global(&env.name, *b)?,
+                PluaEnvValue::Number(n) => plua.set_global(&env.name, *n)?,
             }
+        }
 
-            match plua.exec(&program) {
-                Ok(output) => {
-                    fs::write(&cli.output, output)?;
+        match Plua::compile(&path, &source) {
+            Ok(program) => {
+                if cli.debug {
+                    write_lua(&meta_file, &program.metaprogram)?;
                     if !cli.quiet {
-                        info!("Wrote lua {}", &cli.output);
+                        info!("Wrote metaprogram {}", &meta_file);
                     }
                 }
-                Err(e) => {
-                    report_error(e);
+
+                match plua.exec(&program) {
+                    Ok(output) => {
+                        write_lua(&dest_file, &output)?;
+                        if !cli.quiet {
+                            info!("Wrote lua {}", &dest_file);
+                        }
+                    }
+                    Err(e) => {
+                        report_error(e);
+                    }
                 }
             }
-        }
-        Err(e) => {
-            report_error(e);
+            Err(e) => {
+                report_error(e);
+            }
         }
     }
     Ok(())

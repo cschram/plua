@@ -1,6 +1,6 @@
 ##!include "lib"
 
-function log(msg)
+local function log(msg)
     ##if debug then
         print(msg)
     ##end
@@ -19,7 +19,7 @@ print(#["hello"]#)
 print(#|"hello"|#)
 
 ##function pfunc(name, fn)
-    function #|name|#()
+    local function #|name|#()
         return pcall(#|fn|#)
     end
 ##end
@@ -32,17 +32,17 @@ print(throw_error())
 
 ##[[
 function create_logger(prefix)
-    Plua.emit(#{
+    return #{
         function(msg)
             log("[#|prefix|#]: " .. msg)
         end
-    }#)
+    }#
 end
 ]]
 
-local log = #|create_logger("Plua")|#
+local plua_log = #|create_logger("Plua")|#
 
-print(log(":)"))
+plua_log(":)")
 
 ##[[
 Plua.warn("Compiler warning")

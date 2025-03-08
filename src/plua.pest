@@ -6,7 +6,7 @@ Lua = { LuaChar+ }
 
 LuaChar = _{ !Reserved ~ ANY }
 
-Reserved = { MetaReserved | MetaCodeInterpolatePrefix | MetaCodeInterpolateSuffix }
+Reserved = { MetaReserved | MetaCodeBlockPrefix | MetaCodeBlockSuffix }
 
 MetaReserved = {
     MetaCodeMultiPrefix
@@ -45,21 +45,21 @@ MetaCodeMultiPrefix = _{ "##[[" }
 
 MetaCodeMultiSuffix = _{ "]]" }
 
-MetaCodeMultiBody = { MetaCodeInterpolate | LuaChar+ }
+MetaCodeMultiBody = { MetaCodeBlock | LuaChar+ }
 
 MetaCodeSingle = _{ MetaCodeSinglePrefix ~ MetaCodeSingleBody* ~ End }
 
 MetaCodeSinglePrefix = _{ "##" }
 
-MetaCodeSingleBody = { MetaCodeInterpolate | Character+ }
+MetaCodeSingleBody = { MetaCodeBlock | Character+ }
 
-MetaCodeInterpolate = _{ MetaCodeInterpolatePrefix ~ MetaCodeInterpolateBody ~ MetaCodeInterpolateSuffix }
+MetaCodeBlock = _{ MetaCodeBlockPrefix ~ (MetaCodeBlockBody | MetaValueInterpolate | MetaExpressionInterpolate)* ~ MetaCodeBlockSuffix }
 
-MetaCodeInterpolatePrefix = _{ "#{" }
+MetaCodeBlockPrefix = _{ "#{" }
 
-MetaCodeInterpolateSuffix = _{ "}#" }
+MetaCodeBlockSuffix = _{ "}#" }
 
-MetaCodeInterpolateBody = { LuaChar* }
+MetaCodeBlockBody = { LuaChar+ }
 
 MetaValueInterpolate = _{ MetaValueInterpolatePrefix ~ MetaValueInterpolateBody ~ MetaValueInterpolateSuffix }
 
