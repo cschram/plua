@@ -15,15 +15,15 @@ A WIP Lua preprocessor, inspired by [Nelua's preprocessor](https://nelua.io/over
     - [x] Interpolation
     - [x] Metacode includes
     - [x] Emit compiler warnings and errors
-    - [ ] Inline functions (maybe?)
-- [x] CLI
-    - [x] Compilation
-    - [x] Glob input
 - [x] Environment globals
+- [x] CLI
+- [ ] Rust crate (Not yet ready)
 - [ ] [Lua LS plugin](https://luals.github.io/wiki/plugins/)
 - [ ] Editor syntax highlighting
     - [ ] Vim/Neovim
     - [ ] VS Code
+
+Syntax and semantics are not yet stable, and may change.
 
 ## Usage
 

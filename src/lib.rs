@@ -62,7 +62,6 @@ impl Plua {
     }
 
     pub fn exec(&self, program: &PluaProgram) -> Result<String> {
-        std::fs::write("syntax.meta.lua", &program.metaprogram)?;
         let output: String = self
             .lua
             .load(&program.metaprogram)

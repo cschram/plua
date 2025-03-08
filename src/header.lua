@@ -42,7 +42,7 @@ function Plua.format_value(val)
 		end
 		return "{" .. table.concat(fields, ",") .. "}"
 	elseif t == "function" or t == "thread" or t == "userdata" then
-		error("Cannot interpolate value of type " .. t)
+		error("Interpolating " .. t .. " values is not supported")
 	else
 		return tostring(val)
 	end
