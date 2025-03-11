@@ -3,7 +3,6 @@ use clap::Parser;
 use glob::glob;
 use log::{error, info};
 use plua::Plua;
-use simple_logger::SimpleLogger;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -99,11 +98,7 @@ fn write_lua(filename: &str, source: &str) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    SimpleLogger::new()
-        .with_colors(true)
-        .without_timestamps()
-        .init()
-        .unwrap();
+    pretty_env_logger::init();
 
     let cli = PluaCli::parse();
     let mut plua = Plua::new()?;

@@ -17,7 +17,7 @@ A WIP Lua preprocessor, inspired by [Nelua's preprocessor](https://nelua.io/over
     - [x] Emit compiler warnings and errors
 - [x] Environment globals
 - [x] CLI
-- [ ] Rust crate (Not yet ready)
+- [x] Rust crate (API not stable)
 - [ ] [Lua LS plugin](https://luals.github.io/wiki/plugins/)
 - [ ] Editor syntax highlighting
     - [ ] Vim/Neovim
